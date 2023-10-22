@@ -1,0 +1,41 @@
+name: Check C++ Compilation in Pull Request
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install g++
+      run: sudo apt-get install g++ -y
+
+    - name: Get changed C++ files
+      id: get-files
+      run: |
+        files=$(curl -s "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.number }}/files" | jq -r '.[].filename | select(endswith(".cpp"))')
+        echo "$files" > changed_cpp_files.txt
+
+    - name: Check for C++ compilation errors
+      run: |
+        failed_compilations=""
+        while IFS= read -r file; do
+          echo "Compiling $file"
+          g++ -o "${file%.cpp}.out" "$file" 2>&1
+          if [ $? -ne 0 ]; then
+            echo "C++ compilation failed in $file"
+            failed_compilations="${failed_compilations}${file}\n"
+          fi
+        done < changed_cpp_files.txt
+
+        if [ -n "$failed_compilations" ]; then
+          echo "The following C++ files failed compilation:"
+          echo -e "$failed_compilations"
+          exit 1
+        fi
