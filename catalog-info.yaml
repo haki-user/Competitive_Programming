@@ -1,0 +1,17 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: tekton-demo
+  description: "Simple Java project for Tekton Pipeline Demo."
+  tags:
+    - tekton
+    - cicd
+    - demo
+    - java
+  annotations:
+    github.com/project-slug: haki-user/Competitive-Programming
+spec:
+  type: service
+  lifecycle: experimental
+  owner: haki-user
+  system: Demo
